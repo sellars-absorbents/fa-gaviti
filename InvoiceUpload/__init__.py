@@ -4,8 +4,9 @@ import logging
 import tempfile
 import pdfplumber
 from PyPDF2 import PdfWriter
-import azure.functions as func
+import azure.functions as func 
 from shared import utils
+
 
 def split_pdf_by_invoice(blob_file_path):
     with pdfplumber.open(blob_file_path) as pdf:
@@ -30,7 +31,7 @@ def save_and_upload_invoices(groups, blob_file_path):
             invoice_number = None
             for page_num in pages:
                 page = pdf.pages[page_num]
-                writer.add_page(page.to_pdf_page())
+                writer.add_page(page.page_obj)
                 if invoice_number is None:
                     image = page.to_image(resolution=300).original.convert("L")
                     invoice_number = utils.ocr_invoice_number(image)
