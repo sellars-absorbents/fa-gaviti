@@ -1,4 +1,3 @@
-
 import os
 import logging
 import tempfile
@@ -6,6 +5,20 @@ import pdfplumber
 from PyPDF2 import PdfWriter
 import azure.functions as func 
 from shared import utils
+from azure.storage.blob import BlobServiceClient
+from azure.identity import DefaultAzureCredential
+
+STORAGE_URL = os.getenv("STORAGE_URL")  # e.g. "https://stgprod001.blob.core.windows.net"
+CONTAINER_NAME = os.getenv("CONTAINER_NAME", "invoices")
+
+blob_service_client = BlobServiceClient(account_url=STORAGE_URL, credential=DefaultAzureCredential())
+container_client = blob_service_client.get_container_client(CONTAINER_NAME)
+
+for blob in container_client.list_blobs():
+    if blob.name.endswith(".pdf"):
+        blob_client = container_client.get_blob_client(blob.name)
+        with open(f"/tmp/{blob.name}", "wb") as f:
+            f.write(blob_client.download_blob().readall())
 
 
 def split_pdf_by_invoice(blob_file_path):
