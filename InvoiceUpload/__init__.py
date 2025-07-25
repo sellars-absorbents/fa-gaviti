@@ -1,10 +1,13 @@
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from shared import utils
 import logging
 import tempfile
 import pdfplumber
 from PyPDF2 import PdfWriter
 import azure.functions as func 
-from shared import utils
+
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 
