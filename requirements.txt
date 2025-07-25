@@ -6,3 +6,5 @@ pytesseract
 Pillow
 requests
 pyodbc
+azure-identity
+
