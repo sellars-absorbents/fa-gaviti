@@ -4,6 +4,11 @@ import logging
 import requests
 import azure.functions as func
 from shared import utils
+from dotenv import load_dotenv
+
+env_target = os.getenv("DEPLOY_ENV", "uat")
+env_file = f"./env/.env.{env_target}"
+load_dotenv(dotenv_path=env_file)
 
 GAVITI_API_URL = os.getenv("GAVITI_API_URL")
 

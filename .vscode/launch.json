@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: UAT Environment",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env.nonprod",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Prod Environment",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env.prod",
+      "justMyCode": false
+    }
+  ]
+}

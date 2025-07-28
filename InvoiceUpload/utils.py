@@ -1,4 +1,3 @@
-
 import os
 import re
 import base64
@@ -41,6 +40,7 @@ def upload_to_gaviti(file_path, invoice_id):
     else:
         logging.error(f"Upload failed for {invoice_id}: {response.status_code} - {response.text}")
 
+
 def execute_gp_proc(cash_record):
     try:
         with pyodbc.connect(SQL_CONN_STR) as conn:
@@ -55,3 +55,6 @@ def execute_gp_proc(cash_record):
                 logging.info(f"✅ Cash applied for {cash_record.get('invoiceId')}")
     except Exception as e:
         logging.error(f"❌ Failed to insert {cash_record.get('invoiceId')}: {e}")
+
+        
+
