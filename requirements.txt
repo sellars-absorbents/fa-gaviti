@@ -7,3 +7,7 @@ Pillow
 requests
 pyodbc
 azure-identity
+<<<<<<< HEAD
+
+=======
+>>>>>>> c4209e4f2123d9967bf20cee44981fe452549514
