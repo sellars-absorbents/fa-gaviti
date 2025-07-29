@@ -10,9 +10,15 @@ azure-identity
 pdf2image
 pathlib
 opencv-python
-pip install opencv-contrib-python
+opencv-contrib-python
 poppler-utils
 logging
 PyPDF2
 azure.identity
 python-dotenv
+poppler-utils
+logging
+PyPDF2
+azure.identity
+python-dotenv
+pdf2image>=1.16.3
