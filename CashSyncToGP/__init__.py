@@ -3,7 +3,7 @@ import os
 import logging
 import requests
 import azure.functions as func
-from shared import utils
+from ..shared import utils
 from dotenv import load_dotenv
 
 env_target = os.getenv("DEPLOY_ENV", "uat")
