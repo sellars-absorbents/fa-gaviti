@@ -24,10 +24,14 @@ from pyzbar.pyzbar import decode
 env_target = os.getenv("DEPLOY_ENV", "prod")
 env_file = f"../env/.env.{env_target}"
 load_dotenv(dotenv_path=env_file)
-
+POPPLER_PATH = os.path.join(os.path.dirname(__file__), "tools", "poppler")
+pages = convert_from_path(pdf_path, poppler_path=POPPLER_PATH)
 storage_url = "https://samstgprod001.blob.core.windows.net/"
 STORAGE_URL = "https://samstgprod001.blob.core.windows.net/"
 CONTAINER_NAME = os.getenv("CONTAINER_NAME", "invoices")
+os.chmod(os.path.join(POPPLER_PATH, 'pdfinfo'), 0o755)
+os.chmod(os.path.join(POPPLER_PATH, 'pdftoppm'), 0o755)
+
 
 class BlobDownloader:
     def __init__(self, storage_url, container_name):

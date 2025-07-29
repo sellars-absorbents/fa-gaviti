@@ -7,7 +7,12 @@ Pillow
 requests
 pyodbc
 azure-identity
-<<<<<<< HEAD
-
-=======
->>>>>>> c4209e4f2123d9967bf20cee44981fe452549514
+pdf2image
+pathlib
+opencv-python
+pip install opencv-contrib-python
+poppler-utils
+logging
+PyPDF2
+azure.identity
+python-dotenv
