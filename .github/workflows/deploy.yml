@@ -55,7 +55,7 @@ jobs:
       - name: Deploy to ${{ matrix.slot }} slot
         uses: Azure/functions-action@v1
         with:
-          app-name: fa-gaviti
+          app-name: fa-gaviti-prod
           slot-name: ${{ matrix.slot == 'prod' && 'Production' || matrix.slot }}
           publish-profile: ${{ matrix.slot == 'prod' && secrets.AZURE_PUBLISH_PROFILE_PROD || secrets.AZURE_PUBLISH_PROFILE_UAT }}
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
