@@ -15,7 +15,7 @@ jobs:
 
       - name: Login to Azure with managed identity
         run: |
-          az login --fa-gaviti-ci
+          az login --identity fa-gaviti-ci
 
       - name: Retrieve SSH private key from Key Vault
         run: |
