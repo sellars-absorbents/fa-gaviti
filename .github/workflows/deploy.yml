@@ -20,6 +20,8 @@ jobs:
             branch: uat
             env: uat
 
+    if: github.ref == 'refs/heads/' + matrix.branch
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -31,18 +33,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-      - name: Install dependencies
-        if: ${{ github.ref == format('refs/heads/{0}', matrix.branch) }}
-        run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Deploy to Azure Functions (${{ matrix.slot }})
-        if: ${{ github.ref == format('refs/heads/{0}', matrix.branch) }}
         uses: Azure/functions-action@v1
         with:
-          app-name: fa-gaviti-prod
-          # Use the slot name from the matrix
+          app-name: <your-functionapp-name>
           slot-name: ${{ matrix.slot }}
           package: '.'
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_${{ matrix.slot | upper }} }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_${{ matrix.slot | upper }} }}
+          scm-do-build-during-deployment: true
