@@ -33,7 +33,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fa-gaviti-app
+          name: fa-gaviti-prod
           path: release.zip
 
   deploy:
