@@ -1,89 +1,61 @@
-name: Deploy Function App
+name: Manual Deploy to UAT and Prod Slots
 
 on:
-  push:
-    branches:
-      - main
-      - uat
+  workflow_dispatch:  # Manual trigger via GitHub UI
+
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'  # Adjust if your code is in a subfolder
+  PYTHON_VERSION: '3.12'
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Create virtual environment & install deps
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Zip artifact for deployment
+        run: |
+          zip -r release.zip . -x "venv/**"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fa-gaviti-app
+          path: release.zip
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - slot: production
-            branch: main
-            env: prod
-          - slot: uat
-            branch: uat
-            env: uat
+        slot: [uat, prod]
 
-    
-    
-  if: ${{ github.ref == 'refs/heads/main' }}
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fa-gaviti-app
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-          python-version: '3.10'
+      - name: Unzip artifact
+        run: unzip release.zip
 
-    - name: Install dependencies
-      run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-    - name: Deploy to Azure Functions (production)
-      if: matrix.slot == 'production'
-      uses: Azure/functions-action@v1
-      with:
+      - name: Deploy to ${{ matrix.slot }} slot
+        uses: Azure/functions-action@v1
+        with:
           app-name: fa-gaviti-prod
-          slot-name: production
-          package: '.'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PRODUCTION }}
-
-    if: ${{ github.ref == 'refs/heads/uat' }}
-  steps:
-    - name: Deploy to Azure Functions (uat)
-      if: matrix.slot == 'uat'
-      uses: Azure/functions-action@v1
-      with:
-          app-name: fa-gaviti-prod
-          slot-name: uat
-          package: '.'
-      publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_UAT }}
-
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-          python-version: '3.10'
-
-    - name: Install dependencies
-      run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-    - name: Deploy to Azure Functions (production)
-      if: matrix.slot == 'production'
-      uses: Azure/functions-action@v1
-      with:
-          app-name: fa-gaviti-prod
-          slot-name: production
-          package: '.'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PRODUCTION }}
-
-    - name: Deploy to Azure Functions (uat)
-      if: matrix.slot == 'uat'
-      uses: Azure/functions-action@v1
-      with:
-          app-name: fa-gaviti-prod
-          slot-name: uat
-          package: '.'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_UAT }}
+          slot-name: ${{ matrix.slot == 'prod' && 'Production' || matrix.slot }}
+          publish-profile: ${{ matrix.slot == 'prod' && secrets.AZURE_PUBLISH_PROFILE_PROD || secrets.AZURE_PUBLISH_PROFILE_UAT }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
