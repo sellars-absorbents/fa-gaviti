@@ -42,5 +42,5 @@ jobs:
           app-name: <your-functionapp-name>
           slot-name: ${{ matrix.slot }}
           package: '.'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_${{ matrix.slot | upper }} }}
-          scm-do-build-during-deployment: true
+          publish-profile: ${{ secrets['AZURE_FUNCTIONAPP_PUBLISH_PROFILE_' + matrix.slot] }}
+      
