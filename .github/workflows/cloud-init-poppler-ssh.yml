@@ -15,7 +15,7 @@ jobs:
 
       - name: Login to Azure with managed identity
         run: |
-          az login --identity fa-gaviti-ci
+          az login --identity --object-id f6427190-5c98-436d-9371-daf2b03ec9ad
 
       - name: Retrieve SSH private key from Key Vault
         run: |
