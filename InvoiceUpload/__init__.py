@@ -52,8 +52,8 @@ def split_pdf_by_barcode(pdf_path: Path, output_dir: Path):
 
 def main(myblob: func.InputStream):
     logging.info(f"Processing blob: {myblob.name}")
-    tmp_input = Path("/tmp/input.pdf")
-    tmp_output = Path("/tmp/invoices")
+    tmp_input = Path("/invoices/input.pdf")
+    tmp_output = Path("/downloads")
 
     with open(tmp_input, "wb") as f:
         f.write(myblob.read())
