@@ -1,14 +1,16 @@
 import logging
 import os
 from pathlib import Path
+import numpy as np
+import cv2
+
 from PyPDF2 import PdfReader, PdfWriter
 from pdf2image import convert_from_path
 from pyzbar.pyzbar import decode
-import numpy as np
-import cv2
+from azure.storage.blob import BlobServiceClient
 import azure.functions as func
 
-POPPLER_PATH = os.getenv("POPPLER_PATH", "/usr/bin")
+
 
 def extract_barcode_text(image) -> str | None:
     decoded = decode(image)
@@ -16,7 +18,7 @@ def extract_barcode_text(image) -> str | None:
         return decoded[0].data.decode("utf-8")
     return None
 
-def split_pdf_by_barcode(pdf_path: Path, output_dir: Path):
+def split_pdf_by_barcode(pdf_path: Path, output_dir: Path) -> list[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     images = convert_from_path(str(pdf_path), dpi=300, poppler_path=POPPLER_PATH)
     reader = PdfReader(str(pdf_path))
@@ -50,13 +52,28 @@ def split_pdf_by_barcode(pdf_path: Path, output_dir: Path):
 
     return output_files
 
+def upload_to_blob(file_paths: list[Path]):
+    blob_service = BlobServiceClient(account_url=STORAGE_ACCOUNT_URL, credential=None)
+    container_client = blob_service.get_container_client(OUTPUT_CONTAINER)
+
+    for file_path in file_paths:
+        blob_name = file_path.name
+        with open(file_path, "rb") as data:
+            container_client.upload_blob(name=blob_name, data=data, overwrite=True)
+            logging.info(f"Uploaded {blob_name} to {OUTPUT_CONTAINER}")
+
 def main(myblob: func.InputStream):
-    logging.info(f"Processing blob: {myblob.name}")
-    tmp_input = Path("/invoices/input.pdf")
-    tmp_output = Path("/downloads")
+    logging.info(f"Triggered by blob: {myblob.name}")
+
+    tmp_input = Path("/tmp/input.pdf")
+    tmp_output = Path("/tmp/invoices")
 
     with open(tmp_input, "wb") as f:
         f.write(myblob.read())
 
-    split_pdf_by_barcode(tmp_input, tmp_output)
-    logging.info("Invoice processing complete.")
+    try:
+        split_files = split_pdf_by_barcode(tmp_input, tmp_output)
+        upload_to_blob(split_files)
+        logging.info("Processing and upload completed successfully.")
+    except Exception as e:
+        logging.error(f"Failed to process PDF: {e}")
