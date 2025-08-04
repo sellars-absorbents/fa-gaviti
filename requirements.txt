@@ -4,7 +4,6 @@ PyPDF2
 pdfplumber
 pytesseract
 Pillow
-requests
 pyodbc
 azure-identity
 pdf2image
@@ -13,12 +12,5 @@ opencv-python
 opencv-contrib-python
 poppler-utils
 logging
-PyPDF2
-azure.identity
-python-dotenv
-poppler-utils
-logging
-PyPDF2
-azure.identity
 python-dotenv
 pdf2image>=1.16.3
