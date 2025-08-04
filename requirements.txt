@@ -14,3 +14,4 @@ poppler-utils
 logging
 python-dotenv
 pdf2image>=1.16.3
+requests==2.31.0
