@@ -3,13 +3,17 @@ import os
 from pathlib import Path
 import numpy as np
 import cv2
-
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
 from PyPDF2 import PdfReader, PdfWriter
 from pdf2image import convert_from_path
 from pyzbar.pyzbar import decode
 from azure.storage.blob import BlobServiceClient
 import azure.functions as func
 
+STORAGE_ACCOUNT_URL = os.getenv("HTTPS://SAMSTGPROD001.blob.core.windows.net")
+credential = DefaultAzureCredential()
+blob_service = BlobServiceClient(account_url=STORAGE_ACCOUNT_URL, credential=credential)
 
 
 def extract_barcode_text(image) -> str | None:
@@ -53,7 +57,7 @@ def split_pdf_by_barcode(pdf_path: Path, output_dir: Path) -> list[Path]:
     return output_files
 
 def upload_to_blob(file_paths: list[Path]):
-    blob_service = BlobServiceClient(account_url=STORAGE_ACCOUNT_URL, credential=None)
+    blob_service = BlobServiceClient(account_url=STORAGE_ACCOUNT_URL, credential=credential)
     container_client = blob_service.get_container_client(OUTPUT_CONTAINER)
 
     for file_path in file_paths:
