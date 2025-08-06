@@ -1,20 +1,25 @@
 import logging
 import os
+import dotenv
 from pathlib import Path
 import numpy as np
 import cv2
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
+
+dotenv.load_dotenv()
+
 from PyPDF2 import PdfReader, PdfWriter
 from pdf2image import convert_from_path
 from pyzbar.pyzbar import decode
 from azure.storage.blob import BlobServiceClient
 import azure.functions as func
 
-STORAGE_ACCOUNT_URL = os.getenv("HTTPS://SAMSTGPROD001.blob.core.windows.net")
+STORAGE_ACCOUNT_URL = "https://samstgprod001.blob.core.windows.net/"
 credential = DefaultAzureCredential()
 blob_service = BlobServiceClient(account_url=STORAGE_ACCOUNT_URL, credential=credential)
-
+POPPLER_PATH =  "/tools/poppler/bin"
+OUTPUT_CONTAINER = "processed-invoices"
 
 def extract_barcode_text(image) -> str | None:
     decoded = decode(image)
