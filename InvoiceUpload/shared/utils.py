@@ -1,4 +1,4 @@
-import os
+""" import os
 import re
 import base64
 import logging
@@ -126,3 +126,4 @@ def execute_gp_proc(cash_record):
                 logging.info(f"✅ Cash applied for {cash_record.get('invoiceId')}")
     except Exception as e:
         logging.error(f"❌ Failed to insert {cash_record.get('invoiceId')}: {e}")
+ """
