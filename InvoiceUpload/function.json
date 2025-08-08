@@ -2,7 +2,7 @@
   "scriptFile": "__init__.py",
   "bindings": [
     {
-      "name": "inputBlob",
+      "name": "myblob",
       "type": "blobTrigger",
       "direction": "in",
       "path": "invoices/{name}",
