@@ -3,7 +3,7 @@
     {
       "type": "blobTrigger",
       "direction": "in",
-      "name": "myblob",
+      "name": "inputBlob",
       "path": "invoices/{name}",
       "connection": "AzureWebJobsStorage"
     }
