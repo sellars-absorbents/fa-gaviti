@@ -1,0 +1,8 @@
+{
+  "extensions": [
+    {
+      "name": "AzureStorageBlobs",
+      "typeName": "Microsoft.Azure.WebJobs.Extensions.Storage.Blobs.BlobsExtensionConfigProvider, Microsoft.Azure.WebJobs.Extensions.Storage.Blobs"
+    }
+  ]
+}
