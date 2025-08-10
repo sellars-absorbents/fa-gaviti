@@ -1,61 +1,64 @@
-name: Manual Deploy to UAT and Prod Slots
+name: Deploy Python Azure Functions (zip)
 
 on:
-  workflow_dispatch:  # Manual trigger via GitHub UI
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'  # Adjust if your code is in a subfolder
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: .
   PYTHON_VERSION: '3.12'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      # Optional: keep this only if you run tests/linters
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Create virtual environment & install deps
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
+      # Optional: run tests here
 
-      - name: Zip artifact for deployment
+      - name: Zip artifact
         run: |
-          zip -r release.zip . -x "venv/**"
+          zip -r release.zip . \
+            -x "venv/*" ".venv/*" ".git/*" ".github/*" "__pycache__/*" "*.pyc"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: fa-gaviti-app
+          name: function-zip
           path: release.zip
 
   deploy:
-    needs: build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        slot: [uat, prod]
-
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: fa-gaviti-app
+          name: function-zip
 
-      - name: Unzip artifact
-        run: unzip release.zip
+      - run: unzip release.zip
 
-      - name: Deploy to ${{ matrix.slot }} slot
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EB974A9663B84596BD1F64B1FF7C01BA }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8E82F0EE22484B6B9D6356375C7104ED }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DA79674312E248B9BAF7DD56A6AFCD0B }}
+
+      - name: Deploy to Azure Functions (remote build)
         uses: Azure/functions-action@v1
         with:
-          app-name: fa-gaviti-prod
-          slot-name: ${{ matrix.slot == 'prod' && 'Production' || matrix.slot }}
-          publish-profile: ${{ matrix.slot == 'prod' && secrets.AZURE_PUBLISH_PROFILE_PROD || secrets.AZURE_PUBLISH_PROFILE_UAT }}
+          app-name: fa-gaviti
+          slot-name: Production
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          enable-oryx-build: true
+          scm-do-build-during-deployment: true
