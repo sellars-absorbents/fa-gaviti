@@ -20,7 +20,7 @@ steps:
 
   - uses: actions/setup-python@v5
     with:
-      python-version: ${{ env.PYTHON_VERSION }}
+    python-version: '3.12'
 
   - name: Install dependencies into .python_packages
     run: |
