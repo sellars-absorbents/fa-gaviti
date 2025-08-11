@@ -16,7 +16,7 @@ from azure.storage.blob import BlobServiceClient
 from PyPDF2 import PdfReader, PdfWriter
 import azure.functions as func
 
-dotenv.load_dotenv()
+
 
 # -----------------------
 # Config
