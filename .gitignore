@@ -1,39 +1,59 @@
-# Compiled source #
-###################
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
+# --- Azure Functions (Python)
+local.settings.json
+.secrets/
+.python_packages/
+.scm/
+# Some tools may create these:
+bin/
+obj/
 
-# Packages #
-############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
+# --- Virtual envs / deps
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+dist/
+build/
 
-# Logs and databases #
-######################
-*.log
-*.sql
-*.sqlite
+# --- Python cache/bytecode
+__pycache__/
+*.py[cod]
+*$py.class
 
-# OS generated files #
-######################
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# --- Environment & secrets
 .env
-.cfg
+.env.*
+*.env
+
+# --- Logs & runtime artifacts
+logs/
+*.log
+.cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+tmp/
+temp/
+__temp__/
+/tmp/
+
+# --- Type checker / tooling caches
+.mypy_cache/
+.pyre/
+.pytype/
+
+# --- Editors/IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# --- OS junk
+.DS_Store
+Thumbs.db
+
+# --- CI/CD artifacts
+release.zip
