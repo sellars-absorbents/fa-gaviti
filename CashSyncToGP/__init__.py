@@ -3,12 +3,12 @@ import os
 import logging
 import requests
 import azure.functions as func
-from ..shared import utils
-from dotenv import load_dotenv
+import logging
+
 
 env_target = os.getenv("DEPLOY_ENV", "prod")
 env_file = f"./env/.env.{env_target}"
-load_dotenv(dotenv_path=env_file)
+
 
 GAVITI_API_URL = os.getenv("GAVITI_API_URL")
 
@@ -23,7 +23,7 @@ def main(mytimer: func.TimerRequest) -> None:
     try:
         data = fetch_cash_data()
         for record in data:
-            utils.execute_gp_proc(record)
-        logging.info("✅ Sync completed.")
+            # utils.execute_gp_proc(record)
+            logging.info("✅ Sync completed.")
     except Exception as e:
         logging.error(f"❌ Sync failed: {e}")

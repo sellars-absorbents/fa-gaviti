@@ -1,10 +1,5 @@
 import logging
 import os
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except Exception:
-    pass
 from pathlib import Path
 import base64
 import io
