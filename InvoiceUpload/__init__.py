@@ -10,7 +10,8 @@ from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 from PyPDF2 import PdfReader, PdfWriter
 import azure.functions as func
-
+import logging, importlib.util
+logging.info("requests present at runtime? %s", importlib.util.find_spec("requests") is not None)
 
 
 # -----------------------
