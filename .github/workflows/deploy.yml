@@ -54,11 +54,14 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8E82F0EE22484B6B9D6356375C7104ED }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DA79674312E248B9BAF7DD56A6AFCD0B }}
 
-      - name: Deploy to Azure Functions (remote build)
+      - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
+        id: deploy-to-function
         with:
-          app-name: fa-gaviti
-          slot-name: Production
+          app-name: 'fa-gaviti'
+          slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           enable-oryx-build: true
           scm-do-build-during-deployment: true
+
+ 
