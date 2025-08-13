@@ -29,7 +29,7 @@ HEADERS_BIN = {"Apikey": API_KEY}
 # You can change this to another Cloudmersive convert endpoint if desired.
 CONVERT_ENDPOINT = os.getenv(
     "CLOUDMERSIVE_CONVERT_ENDPOINT",
-    "https://api.cloudmersive.com/convert/autodetect/to/png-array"
+    "https://api.cloudmersive.com/convert/pdf/to/png-array"
 )
 
 # Barcode scan endpoint (expects image file)
