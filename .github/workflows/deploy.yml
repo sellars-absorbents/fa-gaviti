@@ -8,10 +8,9 @@ on:
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: .
   PYTHON_VERSION: '3.12'
-  AZURE_SUBSCRIPTION_ID: '07fa5c8a-e372-40c1-8794-4c29e70fd46e'
   AZURE_RESOURCE_GROUP: 'rg-gaviti-prod'
   AZURE_FUNCTIONAPP_NAME: 'fa-gaviti'
-  STORAGE_ACCOUNT_NAME: 'samstgprod001'   # used by optional appsettings step
+  STORAGE_ACCOUNT_NAME: 'samstgprod001'   # used by appsettings step
 
 jobs:
   build:
@@ -26,27 +25,28 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies into .python_packages
-  run: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt -t .python_packages/lib/site-packages
-
-    # Proper check: add vendored path to sys.path before probing
-    python - << 'PY'
-    import os, sys, importlib.util
-      site = os.path.join(".python_packages","lib","site-packages")
-    print("vendored site exists:", os.path.isdir(site))
-        sys.path.insert(0, site)
-        ok = importlib.util.find_spec("requests") is not None
-    print("requests in build (vendored path)?", ok)
-if ok:
-    import requests; print("requests version:", requests.__version__) 
-PY
-
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -t .python_packages/lib/site-packages
+          python - <<'PY'
+          import os, sys, importlib.util
+          site = os.path.join(".python_packages","lib","site-packages")
+          print("vendored site exists:", os.path.isdir(site))
+          sys.path.insert(0, site)
+          ok = importlib.util.find_spec("requests") is not None
+          print("requests in build (vendored path)?", ok)
+          if ok:
+              import requests
+              print("requests version:", requests.__version__)
+          PY
 
       - name: Zip artifact
         run: |
           zip -r release.zip . \
             -x "venv/*" ".venv/*" ".git/*" ".github/*" "__pycache__/*" "*.pyc" "env/*"
+
+      - name: List requests in ZIP (sanity)
+        run: unzip -l release.zip | grep -i "site-packages/requests" || true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -71,23 +71,19 @@ PY
       - name: Deploy to Azure Functions (zip deploy, no Oryx)
         uses: Azure/functions-action@v1
         with:
-           app-name: fa-gaviti
-          package: 'release.zip'
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: release.zip
           enable-oryx-build: false
           scm-do-build-during-deployment: false
 
-      # Optional: set MI-based storage app setting (do once or keep here)
+      # Optional: set MI-based storage app setting (safe to keep; idempotent)
       - name: Configure MI-based storage setting
         uses: azure/cli@v2
         with:
           inlineScript: |
             az functionapp config appsettings set \
-              -g 'rg-gaviti-prod' -n 'fa-gaviti' \
-              --settings AzureWebJobsStorage__accountName='samstgprod001'
-            # Uncomment to remove old connection string if still present:
-            # az functionapp config appsettings delete \
-            #   -g "${{ env.AZURE_RESOURCE_GROUP }}" -n "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
-            #   --setting-names AzureWebJobsStorage
+              -g "${{ env.AZURE_RESOURCE_GROUP }}" -n "${{ env.AZURE_FUNCTIONAPP_NAME }}" \
+              --settings AzureWebJobsStorage__accountName="${{ env.STORAGE_ACCOUNT_NAME }}"
 
       - name: Restart Function App
         uses: azure/cli@v2
