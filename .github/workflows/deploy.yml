@@ -27,9 +27,12 @@ jobs:
 
       - name: Install dependencies into .python_packages
         run: |
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt -t .python_packages/lib/site-packages
-            python -c "import importlib.util as u; print('requests in build?', u.find_spec('requests') is not None)"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -t .python_packages/lib/site-packages
+          python - << 'PY'
+          import importlib.util as u
+          print("requests in build?", u.find_spec("requests") is not None)
+          PY
 
       - name: Zip artifact
         run: |
