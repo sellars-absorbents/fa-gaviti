@@ -8,7 +8,7 @@ import zipfile
 import requests
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
-from PyPDF2 import PdfReader, PdfWriter
+import fitz
 import azure.functions as func
 import logging, importlib.util
 logging.info("requests present at runtime? %s", importlib.util.find_spec("requests") is not None)
@@ -170,46 +170,51 @@ def scan_image_for_barcode(img_bytes: bytes) -> tuple[str | None, str | None]:
 # -----------------------
 # Split & upload
 # -----------------------
+import fitz  # PyMuPDF
+
 def split_pdf_by_barcode_cloudmersive(pdf_path: Path, output_dir: Path) -> list[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     pdf_bytes = pdf_path.read_bytes()
 
-    # 1) PDF -> images (Cloudmersive)
+    # 1) PDF -> images for barcode detection (your existing call)
     page_images = convert_pdf_to_images(pdf_bytes)
 
-    # 2) Read original PDF for page copies
-    reader = PdfReader(str(pdf_path))
+    # 2) Open the original PDF once
+    src = fitz.open(str(pdf_path))
 
-    invoice_writer: PdfWriter | None = None
-    invoice_number: str | None = None
-    output_files: list[Path] = []
+    invoice_doc = None
+    invoice_number = None
+    outputs: list[Path] = []
 
     for i, img in enumerate(page_images):
         bctype, value = scan_image_for_barcode(img)
 
-        # Start a new invoice when we see a barcode (Code128 expected)
+        # new invoice boundary
         if value:
-            if invoice_writer and invoice_number:
+            # flush previous invoice
+            if invoice_doc and invoice_number:
                 out = output_dir / f"{invoice_number}.pdf"
-                with open(out, "wb") as fo:
-                    invoice_writer.write(fo)
-                output_files.append(out)
+                invoice_doc.save(out)
+                invoice_doc.close()
+                outputs.append(out)
 
             invoice_number = value.strip()
-            invoice_writer = PdfWriter()
+            invoice_doc = fitz.open()  # empty doc
 
-        if invoice_writer:
-            # Add the corresponding page from the ORIGINAL PDF
-            invoice_writer.add_page(reader.pages[i])
+        if invoice_doc:
+            # copy page i from the original PDF
+            invoice_doc.insert_pdf(src, from_page=i, to_page=i)
 
-    # Flush final invoice
-    if invoice_writer and invoice_number:
+    # flush the last one
+    if invoice_doc and invoice_number:
         out = output_dir / f"{invoice_number}.pdf"
-        with open(out, "wb") as fo:
-            invoice_writer.write(fo)
-        output_files.append(out)
+        invoice_doc.save(out)
+        invoice_doc.close()
+        outputs.append(out)
 
-    return output_files
+    src.close()
+    return outputs
+
 
 
 def upload_to_blob(file_paths: list[Path]):
